@@ -1,40 +1,27 @@
 <script setup>
-import { ref } from 'vue'
-import CounterExo from './components/CounterExo.vue'
-import UserListExo from './components/UserListExo.vue'
-
-// Simple state to toggle exercises if we want, or display both.
-// Displaying both side-by-side or stacked implies a nice layout.
-// Let's create a simple tab system for a cleaner view.
-const activeTab = ref(2) 
-
+import { RouterLink, RouterView } from 'vue-router'
 </script>
 
 <template>
   <div class="app-container">
     <header class="main-header">
-      <h1>✨ Vue 3 Mastery</h1>
-      <nav class="nav-tabs">
-        <button 
-          :class="['nav-btn', { active: activeTab === 1 }]" 
-          @click="activeTab = 1"
-        >
-          Exo 1: Compteur
-        </button>
-        <button 
-          :class="['nav-btn', { active: activeTab === 2 }]" 
-          @click="activeTab = 2"
-        >
-          Exo 2: Composants
-        </button>
+      <nav class="nav-bar">
+        <RouterLink to="/" class="nav-link" active-class="active">
+          🏠 Home
+        </RouterLink>
+        <RouterLink to="/list" class="nav-link" active-class="active">
+          👥 Utilisateurs
+        </RouterLink>
       </nav>
     </header>
 
     <main class="content-area">
-      <Transition name="fade" mode="out-in">
-        <CounterExo v-if="activeTab === 1" />
-        <UserListExo v-else-if="activeTab === 2" />
-      </Transition>
+      <!-- Router View with Transition -->
+      <RouterView v-slot="{ Component }">
+        <Transition name="fade" mode="out-in">
+          <component :is="Component" />
+        </Transition>
+      </RouterView>
     </main>
   </div>
 </template>
@@ -44,52 +31,45 @@ const activeTab = ref(2)
   max-width: 800px;
   margin: 0 auto;
   padding: 2rem;
-  min-height: 80vh;
+  min-height: 100vh;
 }
 
 .main-header {
-  text-align: center;
+  display: flex;
+  justify-content: center;
   margin-bottom: 3rem;
 }
 
-h1 {
-  font-size: 2.5rem;
-  font-weight: 800;
-  letter-spacing: -1px;
-  background: linear-gradient(135deg, #fff 30%, #a5b4fc);
-  -webkit-background-clip: text;
-  background-clip: text;
-  color: transparent;
-  margin-bottom: 2rem;
-}
-
-.nav-tabs {
-  display: inline-flex;
+.nav-bar {
   background: rgba(255, 255, 255, 0.05);
-  padding: 0.3rem;
-  border-radius: 12px;
-  gap: 0.3rem;
+  backdrop-filter: blur(10px);
+  padding: 0.5rem;
+  border-radius: 16px;
+  border: 1px solid rgba(255, 255, 255, 0.1);
+  display: flex;
+  gap: 0.5rem;
 }
 
-.nav-btn {
-  background: transparent;
-  border: none;
+.nav-link {
+  text-decoration: none;
   color: #94a3b8;
-  padding: 0.6rem 1.2rem;
-  border-radius: 8px;
-  font-size: 0.9rem;
+  padding: 0.7rem 1.2rem;
+  border-radius: 12px;
   font-weight: 500;
-  cursor: pointer;
-  transition: all 0.2s;
+  transition: all 0.2s ease;
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
 }
 
-.nav-btn:hover {
+.nav-link:hover {
   color: #fff;
+  background: rgba(255, 255, 255, 0.05);
 }
 
-.nav-btn.active {
+.nav-link.active {
   background: #647eff;
-  color: #fff;
+  color: white;
   box-shadow: 0 4px 12px rgba(100, 126, 255, 0.3);
 }
 
