@@ -1,25 +1,18 @@
 <script setup>
-import { ref, onMounted, computed } from 'vue'
+import { onMounted, computed, ref } from 'vue'
 import { useRoute, useRouter } from 'vue-router'
+import { useUserStore } from '../stores/user'
 
 const route = useRoute()
 const router = useRouter()
+const userStore = useUserStore()
 
 const userId = route.params.id
 const user = ref(null)
 
-// Mock database
-const allUsers = [
-  { id: 1, name: 'Jean Dujardin', email: 'jean.dujardin@film.fr', role: 'Acteur', bio: 'Jean Dujardin est un acteur, humoriste, scénariste, réalisateur et producteur de cinéma français. Il est le premier acteur français à remporter l\'Oscar du meilleur acteur.' },
-  { id: 2, name: 'Marion Cotillard', email: 'marion@hollywood.com', role: 'Actrice', bio: 'Marion Cotillard est une actrice française. Elle a reçu de nombreuses récompenses, dont un Oscar, un César, un BAFTA et un Golden Globe.' },
-  { id: 3, name: 'Omar Sy', email: 'omar.sy@netflix.com', role: 'Humoriste', bio: 'Omar Sy est un acteur et humoriste français. Il accède à la notoriété en formant, avec Fred Testot, le duo comique Omar et Fred.' },
-  { id: 4, name: 'Audrey Tautou', email: 'audrey@amelie.fr', role: 'Actrice', bio: 'Audrey Tautou est une actrice française. Elle a été révélée au grand public par le film Le Fabuleux Destin d\'Amélie Poulain.' },
-  { id: 5, name: 'Vincent Cassel', email: 'vincent@haine.com', role: 'Réalisateur', bio: 'Vincent Cassel est un acteur, réalisateur et producteur de cinéma français. Il est connu pour ses rôles de types instables ou violents.' },
-]
-
 onMounted(() => {
-    // Simulate API call
-    user.value = allUsers.find(u => u.id == userId)
+    // Get user from store instead of mock array
+    user.value = userStore.getUserById(userId)
 })
 
 const goBack = () => {
@@ -37,7 +30,7 @@ const userColor = computed(() => {
 <template>
   <div class="page-container">
     <button @click="goBack" class="btn-back">
-        ← Retour
+        ← Retour à la liste
     </button>
     
     <div v-if="user" class="profile-card">
@@ -50,20 +43,32 @@ const userColor = computed(() => {
           <span class="badge">{{ user.role }}</span>
           
           <div class="details">
-              <p><strong>Email:</strong> {{ user.email }}</p>
-              <p class="bio">{{ user.bio }}</p>
+              <div class="detail-row">
+                <span class="label">Email</span>
+                <span class="value">{{ user.email }}</span>
+              </div>
+               <div class="detail-row">
+                <span class="label">ID</span>
+                <span class="value">#{{ user.id }}</span>
+              </div>
+              
+              <div class="bio-section">
+                <h3>Biographie</h3>
+                <p class="bio">{{ user.bio }}</p>
+              </div>
           </div>
       </div>
     </div>
     <div v-else class="not-found">
-        <p>Utilisateur non trouvé.</p>
+        <p>Utilisateur non trouvé ou supprimé.</p>
+        <button @click="goBack" class="btn-primary">Retour</button>
     </div>
   </div>
 </template>
 
 <style scoped>
 .page-container {
-  max-width: 700px;
+  max-width: 600px;
   margin: 0 auto;
 }
 
@@ -71,76 +76,123 @@ const userColor = computed(() => {
     background: transparent;
     border: none;
     color: #94a3b8;
-    margin-bottom: 1rem;
+    margin-bottom: 1.5rem;
     cursor: pointer;
-    font-size: 1rem;
+    font-size: 0.9rem;
     padding: 0;
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+    transition: color 0.2s;
 }
 .btn-back:hover { color: white; }
 
 .profile-card {
     background: #1e293b;
-    border-radius: 20px;
+    border-radius: 24px;
     overflow: hidden;
-    box-shadow: 0 20px 25px -5px rgba(0, 0, 0, 0.1), 0 10px 10px -5px rgba(0, 0, 0, 0.04);
+    box-shadow: 0 20px 25px -5px rgba(0, 0, 0, 0.3);
+    border: 1px solid rgba(255, 255, 255, 0.05);
 }
 
 .banner {
-    height: 120px;
+    height: 150px;
     width: 100%;
-    opacity: 0.8;
+    opacity: 0.9;
 }
 
 .content {
-    padding: 2rem;
+    padding: 0 2rem 3rem;
     position: relative;
-    padding-top: 3rem;
     text-align: center;
+    margin-top: -60px;
 }
 
 .avatar {
-    width: 100px;
-    height: 100px;
+    width: 120px;
+    height: 120px;
     background: #0f172a;
     border-radius: 50%;
-    border: 4px solid;
-    position: absolute;
-    top: -50px;
-    left: 50%;
-    transform: translateX(-50%);
+    border: 6px solid;
+    margin: 0 auto 1.5rem;
     display: flex;
     align-items: center;
     justify-content: center;
-    font-size: 2.5rem;
+    font-size: 3rem;
     font-weight: 800;
     color: white;
+    box-shadow: 0 10px 15px -3px rgba(0, 0, 0, 0.3);
 }
 
 h1 {
-    margin: 0.5rem 0;
-    font-size: 2rem;
+    margin: 0 0 0.5rem;
+    font-size: 2.2rem;
     color: #f1f5f9;
 }
 
 .badge {
-    background: #334155;
-    color: #94a3b8;
-    padding: 0.2rem 0.8rem;
-    border-radius: 12px;
+    background: rgba(255, 255, 255, 0.1);
+    color: #cbd5e1;
+    padding: 0.3rem 1rem;
+    border-radius: 20px;
     font-size: 0.8rem;
     text-transform: uppercase;
     font-weight: 600;
+    letter-spacing: 1px;
+    display: inline-block;
 }
 
 .details {
-    margin-top: 2rem;
-    color: #cbd5e1;
+    margin-top: 2.5rem;
     text-align: left;
+    background: rgba(0, 0, 0, 0.2);
+    border-radius: 16px;
+    padding: 1.5rem;
+}
+
+.detail-row {
+    display: flex;
+    justify-content: space-between;
+    padding: 0.8rem 0;
+    border-bottom: 1px solid rgba(255, 255, 255, 0.05);
+}
+
+.label { color: #94a3b8; }
+.value { color: #fff; font-weight: 500; }
+
+.bio-section {
+    margin-top: 1.5rem;
+}
+
+.bio-section h3 {
+    font-size: 1rem;
+    color: #647eff;
+    margin-bottom: 0.5rem;
 }
 
 .bio {
-    line-height: 1.6;
-    margin-top: 1rem;
+    line-height: 1.7;
+    margin: 0;
+    color: #cbd5e1;
+    font-size: 0.95rem;
+}
+
+/* Not Found State */
+.not-found {
+    text-align: center;
+    padding: 4rem 2rem;
+    background: rgba(255, 255, 255, 0.05);
+    border-radius: 20px;
     color: #94a3b8;
+}
+
+.btn-primary {
+    margin-top: 1rem;
+    background: #647eff;
+    color: white;
+    border: none;
+    padding: 0.6rem 1.2rem;
+    border-radius: 8px;
+    cursor: pointer;
 }
 </style>
